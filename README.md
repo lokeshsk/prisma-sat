@@ -1,24 +1,40 @@
-# prisma-sat: PRISMA Hyperspectral Data Acquisition Pipeline
+# prisma-sat: PRISMA Hyperspectral Data Acquisition Pipeline & CLI
+
+[![PyPI version](https://img.shields.io/badge/pypi-prisma--sat-blue.svg)](https://pypi.org/project/prisma-sat/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 
 An automated Python toolkit and CLI to search, order, and download Italian Space Agency (**ASI PRISMA**) hyperspectral satellite data for any Area of Interest (AOI) provided in **GeoJSON** or **Bounding Box (bbox)** format.
+
+---
+
+## Quick Install
+
+Install directly via `pip` or `uv`:
+
+```bash
+pip install prisma-sat
+```
+
+This installs both the command-line utility `prisma-sat` and Python library imports (`import prisma_sat` / `import prisma_pilot`).
 
 ---
 
 ## Table of Contents
 
 1. [Understanding PRISMA vs. Sentinel Data Model](#1-understanding-prisma-vs-sentinel-data-model)
-2. [Prerequisites & Environment](#2-prerequisites--environment)
-3. [Credentials Setup (.env)](#3-credentials-setup-env)
-4. [Step-by-Step Workflow (In Order of Use)](#4-step-by-step-workflow-in-order-of-use)
+2. [Credentials Setup (.env)](#2-credentials-setup-env)
+3. [CLI Quickstart & Workflow](#3-cli-quickstart--workflow)
    - [Step 1: Check Completed Orders](#step-1-check-completed-orders)
    - [Step 2: Search PRISMA Catalog by Bounding Box](#step-2-search-prisma-catalog-by-bounding-box)
    - [Step 3: Search PRISMA Catalog by GeoJSON](#step-3-search-prisma-catalog-by-geojson)
    - [Step 4: Search Using HTTP Protocol Fallback](#step-4-search-using-http-protocol-fallback)
    - [Step 5: Submit a Processing Order for Raw Scenes](#step-5-submit-a-processing-order-for-raw-scenes)
    - [Step 6: Download Completed Products](#step-6-download-completed-products)
-5. [Complete CLI Command Reference](#5-complete-cli-command-reference)
-6. [Python API / SDK Usage](#6-python-api--sdk-usage)
-7. [Product Levels & HDF5 Data Cube Structure](#7-product-levels--hdf5-data-cube-structure)
+4. [Complete CLI Command Reference](#4-complete-cli-command-reference)
+5. [Python API / SDK Usage](#5-python-api--sdk-usage)
+6. [Product Levels & HDF5 Data Cube Structure](#6-product-levels--hdf5-data-cube-structure)
+7. [Publishing to PyPI](#7-publishing-to-pypi)
 8. [Troubleshooting & FAQ](#8-troubleshooting--faq)
 
 ---
@@ -34,43 +50,34 @@ Unlike Sentinel-2 (which systematically pre-processes the globe and hosts instan
 
 ---
 
-## 2. Prerequisites & Environment
+## 2. Credentials Setup (.env)
 
-The project runs using Python 3.10+ and Google Chrome (for automated headless OAuth2 SSO authentication):
-
-```bash
-cd /home/ubuntu/Documents/prisma_pilot
-```
-
-The dedicated virtual environment is already prepared at `.venv/`:
-- **Python interpreter:** `./.venv/bin/python`
-- **Dependencies installed:** `requests`, `python-dotenv`, `websockets`, `h5py`, `rasterio`, `shapely`, `numpy`.
-
----
-
-## 3. Credentials Setup (.env)
-
-Ensure your PRISMA portal credentials are in a `.env` file in the project root:
+Set your PRISMA portal credentials in an environment file or environment variables:
 
 ```env
 PRISMA_USER=your_username
 PRISMA_PASS=your_password
 ```
 
-*(The loader also accepts `PRISMA_USERNAME` and `PRISMA_PASSWORD`)*
+Locations automatically discovered by `prisma-sat`:
+1. Current working directory: `./.env`
+2. User config directory: `~/.config/prisma_sat/.env` (or `~/.prisma_sat/.env`)
+3. Passed explicitly via CLI: `prisma-sat --env-file /path/to/.env ...`
+4. Standard shell environment variables (`export PRISMA_USER="..."`)
 
 On the first run, the tool uses headless Chrome via DevTools Protocol (CDP) to log in to the WSO2 Identity Server, approve OAuth consent, and cache the session cookies at `~/.cache/prisma_pilot/session.json`. Subsequent runs execute in **~2 seconds** without opening a browser.
 
 ---
 
-## 4. Step-by-Step Workflow (In Order of Use)
+## 3. CLI Quickstart & Workflow
 
 ### Step 1: Check Completed Orders
 
 Before requesting new processing, check if any scenes over your target area have already been processed and are ready for immediate download:
 
 ```bash
-./.venv/bin/python download_prisma.py orders
+prisma-sat orders
+# or: python download_prisma.py orders
 ```
 
 **Output:**
@@ -94,10 +101,12 @@ extref_161673    | L1_A_EO   | COMPLETED   | 2026-01-30 06:02:12  | 2026-11-18 0
 Search for scenes intersecting a bounding box `[min_lon, min_lat, max_lon, max_lat]` in WGS84:
 
 ```bash
-# Search with max 20% cloud cover
-./.venv/bin/python download_prisma.py search \
+prisma-sat search \
   --bbox 72.2 22.8 72.8 23.2 \
   --max-cloud 20 \
+  --start-date 2021-01-01 \
+  --limit 5
+```
   --limit 10
 ```
 
@@ -270,7 +279,27 @@ HDFEOS/SWATHS/
 
 ---
 
-## 8. Troubleshooting & FAQ
+## 8. Publishing to PyPI
+
+To build and publish `prisma-sat` to PyPI:
+
+```bash
+# 1. Build the distribution wheel and source tarball
+uv build
+
+# 2. Upload to PyPI (using an API token from pypi.org)
+uv publish --token pypi-AgEIcHlwaS5vcmc...
+```
+
+Or using `twine`:
+```bash
+pip install twine
+twine upload dist/*
+```
+
+---
+
+## 9. Troubleshooting & FAQ
 
 ### Q: Why does the catalog return `PRS_L0__EO` instead of L2D?
 > PRISMA archives data at Level 0. To get Level 1, 2C, or 2D, submit an order with `--order-if-needed --processor L2D`. Processing takes 20–45 minutes.

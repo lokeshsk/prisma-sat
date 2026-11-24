@@ -15,6 +15,8 @@ env_file_override = os.getenv("PRISMA_ENV_FILE")
 
 # Search candidate locations portable across OS/environments
 CANDIDATE_DOTENVS = [
+    Path.home() / ".config" / "prisma_sat" / ".env",
+    Path.home() / ".prisma_sat" / ".env",
     Path.home() / ".config" / "prisma_pilot" / ".env",
     Path.home() / ".prisma_pilot" / ".env",
     Path(__file__).resolve().parent.parent / ".env",

@@ -170,8 +170,9 @@ async def _run_chrome_cdp_login(username: str, password: str, port: int = 9222) 
 
             submitted = False
             approved = False
+            reached_portal = False
 
-            for _ in range(20):
+            for _ in range(35):
                 await asyncio.sleep(1)
                 curr_url = (await cmd("Runtime.evaluate", {"expression": "window.location.href"})).get("result", {}).get("value", "")
                 if "login.do" in curr_url and not submitted:
@@ -189,7 +190,11 @@ async def _run_chrome_cdp_login(username: str, password: str, port: int = 9222) 
                     approved = True
                 elif "missionselect" in curr_url and "login.do" not in curr_url and submitted:
                     logger.info("Successfully reached PRISMA portal in browser.")
+                    reached_portal = True
                     break
+
+            if not reached_portal:
+                raise RuntimeError(f"Chrome login timed out waiting for redirect to PRISMA portal. Final URL: {curr_url}")
 
             # Extract cookies for prisma.asi.it
             cookies_res = await cmd("Network.getCookies", {
@@ -246,6 +251,7 @@ def get_authenticated_session(force_refresh: bool = False) -> requests.Session:
     cookies = asyncio.run(_run_chrome_cdp_login(config.username, config.password))
 
     session = create_base_session(cookies)
+    perform_catalog_handshake(session)
     if not verify_session(session):
         raise RuntimeError("Authentication completed but session verification failed.")
 

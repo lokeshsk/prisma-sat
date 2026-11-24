@@ -5,10 +5,32 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "prisma-sat"
 version = "0.1.0"
-description = "Python client and CLI to search, order, and download ASI PRISMA hyperspectral satellite data by AOI."
+description = "Automated Python client and CLI to search, order, and download ASI PRISMA hyperspectral satellite data by AOI."
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 requires-python = ">=3.9"
+authors = [
+    { name = "Lokesh Shukla", email = "lokesh.skshukla@gmail.com" },
+]
+keywords = [
+    "prisma",
+    "hyperspectral",
+    "satellite",
+    "earth-observation",
+    "remote-sensing",
+    "asi",
+    "geospatial",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
 dependencies = [
     "h5py>=3.8.0",
     "numpy>=1.22.0",
@@ -24,6 +46,17 @@ dev = [
     "pytest>=7.0.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/lokeshsk/prisma-sat"
+Repository = "https://github.com/lokeshsk/prisma-sat"
+Issues = "https://github.com/lokeshsk/prisma-sat/issues"
+
 [project.scripts]
 prisma-sat = "prisma_pilot.cli:run_cli"
+prismasat = "prisma_pilot.cli:run_cli"
 download-prisma = "prisma_pilot.cli:run_cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["prisma_pilot*", "prisma_sat*"]
+exclude = ["tests*", "downloads*"]
