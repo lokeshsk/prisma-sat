@@ -1,0 +1,55 @@
+# Environments and Secrets
+.env
+.env.*
+!.env.example
+*.env
+
+# Local session caches and credentials
+*.session.json
+session.json
+.cache/
+chrome_prisma_*
+/tmp/chrome_prisma_*
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Downloaded satellite data and large binaries
+downloads/
+data/
+*.he5
+*.zip
+*.tar.gz
+*.part
+*.tif
+*.tiff
+
+# IDE and OS metadata
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Internal scratch notes
+context.md
+CONTEXT.md
