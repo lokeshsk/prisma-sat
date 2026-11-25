@@ -117,11 +117,14 @@ Examples:
   # Search using HTTP fallback protocol
   prisma-sat search --bbox 72.2 22.8 72.8 23.2 --http
 
+  # Order a raw scene to be processed into Level 2D (surface reflectance)
+  prisma-sat order --id PRS_L0__EO_OFFL_20210316055214_20210316055218_0001 --processor L2D
+
   # List existing user orders and processing statuses
   prisma-sat orders
 
-  # Download a product directly
-  prisma-sat download --id PRS_L1_STD_OFFL_20260130060212_20260130060216_0001 --output ./downloads
+  # Download a product using the delivery link from your email
+  prisma-sat download --id "http://prisma.asi.it/Products/<token>/PRS_...zip" --output ./downloads
 
   # Full pipeline: Search AOI and automatically download best scene
   prisma-sat run --geojson sample_aoi.geojson --max-cloud 15 --download-first --output ./downloads
@@ -140,6 +143,12 @@ Examples:
     # Command: orders
     orders_parser = subparsers.add_parser("orders", help="List user processing orders and statuses")
     orders_parser.add_argument("--http", action="store_true", help="Try HTTP protocol instead of HTTPS")
+
+    # Command: order
+    order_parser = subparsers.add_parser("order", help="Submit processing order for a scene to Level 1, 2B, 2C, or 2D")
+    order_parser.add_argument("--id", "-i", dest="product_id", required=True, help="Product ID (e.g. PRS_L0__EO_OFFL_...)")
+    order_parser.add_argument("--processor", default="L2D", choices=["L1", "L2B", "L2C", "L2D"], help="Processor level (default: L2D)")
+    order_parser.add_argument("--http", action="store_true", help="Try HTTP protocol instead of HTTPS")
 
     # Command: download
     dl_parser = subparsers.add_parser("download", help="Download a PRISMA product by ID or URL")
@@ -204,7 +213,29 @@ def main(args_list: list[str] | None = None) -> int:
         display_orders_table(orders)
         return 0
 
-    # 2. Handle Direct Download Command
+    # 2. Handle Order Submission Command
+    if command == "order":
+        product_id = getattr(args, "product_id", None)
+        if not product_id:
+            print("[!] Error: Must specify --id <product_id>")
+            return 1
+        processor = getattr(args, "processor", "L2D")
+        print(f"[*] Submitting processing order for: {product_id} to Level {processor}...")
+        try:
+            order_res = order_processing(product_id, processor=processor, session=session, use_http=args.http)
+            order_id = order_res.get("orderId", "N/A")
+            print(f"\n[+] Order successfully submitted to ASI processing cluster!")
+            print(f"    Order ID:  {order_id}")
+            print(f"    Status:    {order_res.get('status', 'submitted')}")
+            print(f"    Processor: Level {processor}")
+            print(f"\n[i] Monitor processing status with: prisma-sat orders")
+            print(f"    Once completed (~20-40 mins), ASI will email your download link.\n")
+            return 0
+        except Exception as e:
+            print(f"\n[-] Order submission error: {e}")
+            return 1
+
+    # 3. Handle Direct Download Command
     if command == "download":
         product_id = getattr(args, "product_id", None)
         if not product_id:

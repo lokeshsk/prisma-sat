@@ -32,8 +32,21 @@ def test_cli_parse_orders():
     assert args.command == "orders"
 
 
+def test_cli_parse_order_command():
+    args = parse_args(["order", "--id", "PRS_L0__EO_OFFL_20210316055214_20210316055218_0001", "--processor", "L2D"])
+    assert args.command == "order"
+    assert args.product_id == "PRS_L0__EO_OFFL_20210316055214_20210316055218_0001"
+    assert args.processor == "L2D"
+
+
 def test_extref_order_id_notice():
     from prisma_pilot.downloader import download_product
-    with pytest.raises(ValueError, match="is an Order ID, not a download URL"):
+    with pytest.raises(ValueError, match="is an Order Reference ID, not a download URL"):
         download_product("extref_160770")
+
+
+def test_prs_l0_direct_download_notice():
+    from prisma_pilot.downloader import download_product
+    with pytest.raises(ValueError, match="is a raw Level 0 catalog acquisition"):
+        download_product("PRS_L0__EO_OFFL_20210316055214_20210316055218_0001")
 

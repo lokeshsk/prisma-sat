@@ -214,11 +214,21 @@ def download_product(
     raw_target = product_id_or_url.strip()
     if raw_target.startswith("extref_"):
         raise ValueError(
-            f"'{raw_target}' is an Order ID, not a download URL.\n"
+            f"'{raw_target}' is an Order Reference ID, not a download URL.\n"
             f"ASI PRISMA delivers completed product packages via email with subject:\n"
             f"  '[Order {raw_target}]: New PRISMA Product Available'\n"
             f"Please check your email, copy the download link (valid for 2 weeks), and run:\n"
             f"  prisma-sat download --id \"http://prisma.asi.it/Products/<token>/PRS_...zip\""
+        )
+
+    if raw_target.startswith("PRS_L0_"):
+        raise ValueError(
+            f"'{raw_target}' is a raw Level 0 catalog acquisition.\n"
+            f"ASI PRISMA does not host instant direct file downloads for raw Level 0 telemetry.\n"
+            f"To obtain analysis-ready data, submit a processing order to ASI's HPC cluster:\n"
+            f"  prisma-sat order --id {raw_target} --processor L2D\n\n"
+            f"Or run the automated search-and-order pipeline:\n"
+            f"  prisma-sat run --download-first --order-if-needed --processor L2D"
         )
 
     is_url = raw_target.startswith("http://") or raw_target.startswith("https://")
@@ -326,10 +336,22 @@ def order_processing(
 
     processor_name = "L1_A_EO" if processor.upper() in ("L1", "L1A", "L1_A_EO") else processor.upper()
 
+    # Extract acquisition timestamps from product ID
+    import re
+    ts_match = re.search(r"(\d{14})_(\d{14})", clean_id)
+    start_time_iso = ""
+    stop_time_iso = ""
+    if ts_match:
+        s1, s2 = ts_match.group(1), ts_match.group(2)
+        start_time_iso = f"{s1[:4]}-{s1[4:6]}-{s1[6:8]}T{s1[8:10]}:{s1[10:12]}:{s1[12:14]}.000Z"
+        stop_time_iso = f"{s2[:4]}-{s2[4:6]}-{s2[6:8]}T{s2[8:10]}:{s2[10:12]}:{s2[12:14]}.000Z"
+
     order_payload = {
         "INPUT_NAME": filename_s,
         "id": f"{filename_s}-0001",
         "processorname": processor_name,
+        "start_time": start_time_iso,
+        "stop_time": stop_time_iso,
         "base_params": {},
         "proc_spec_params": {},
     }
