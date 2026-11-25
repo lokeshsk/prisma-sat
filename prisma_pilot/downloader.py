@@ -212,6 +212,15 @@ def download_product(
         session = get_authenticated_session()
 
     raw_target = product_id_or_url.strip()
+    if raw_target.startswith("extref_"):
+        raise ValueError(
+            f"'{raw_target}' is an Order ID, not a download URL.\n"
+            f"ASI PRISMA delivers completed product packages via email with subject:\n"
+            f"  '[Order {raw_target}]: New PRISMA Product Available'\n"
+            f"Please check your email, copy the download link (valid for 2 weeks), and run:\n"
+            f"  prisma-sat download --id \"http://prisma.asi.it/Products/<token>/PRS_...zip\""
+        )
+
     is_url = raw_target.startswith("http://") or raw_target.startswith("https://")
 
     if is_url:

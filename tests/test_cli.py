@@ -30,3 +30,10 @@ def test_cli_parse_download():
 def test_cli_parse_orders():
     args = parse_args(["orders"])
     assert args.command == "orders"
+
+
+def test_extref_order_id_notice():
+    from prisma_pilot.downloader import download_product
+    with pytest.raises(ValueError, match="is an Order ID, not a download URL"):
+        download_product("extref_160770")
+

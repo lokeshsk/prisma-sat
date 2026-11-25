@@ -76,6 +76,10 @@ def display_orders_table(orders: list[dict]):
         print(f"{order_id:<16} | {proc:<9} | {status:<11} | {start:<20} | {prod_stop:<20}")
 
     print("-" * len(header))
+    print("\n  [i] Delivery Note: When an order reaches COMPLETED status, ASI PRISMA ('Prisma Delivery')")
+    print("      sends the temporary download link (valid for 2 weeks) to your registered email.")
+    print("      Subject: '[Order <order_id>]: New PRISMA Product Available'")
+    print("      To download: prisma-sat download --id \"http://prisma.asi.it/Products/...\" --output ./downloads\n")
 
 
 def _add_aoi_args(p: argparse.ArgumentParser):
