@@ -154,14 +154,18 @@ To test using `http://` endpoints first (with automatic, seamless fallback to `h
 If a scene is not yet processed, trigger a processing order for Level 2D (orthorectified surface reflectance):
 
 ```bash
-./.venv/bin/python download_prisma.py run \
+# Direct order by Product ID
+prisma-sat order --id PRS_L0__EO_OFFL_20210316055214_20210316055218_0001 --processor L2D
+
+# Or automated search-and-order pipeline
+prisma-sat run \
   --geojson sample_aoi.geojson \
   --max-cloud 10 \
   --processor L2D \
   --order-if-needed
 ```
 
-Once submitted, monitor progress with `./.venv/bin/python download_prisma.py orders` until status is `COMPLETED` (~20–45 min).
+Once submitted, monitor progress with `prisma-sat orders` until status is `COMPLETED` (~20–45 min).
 
 ---
 

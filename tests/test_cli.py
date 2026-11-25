@@ -9,7 +9,7 @@ def test_prisma_sat_import():
     assert hasattr(prisma_sat, "search_prisma")
     assert hasattr(prisma_sat, "download_product")
     assert hasattr(prisma_sat, "parse_aoi")
-    assert prisma_sat.__version__ == "0.1.0"
+    assert prisma_sat.__version__ == "0.2.0"
 
 
 def test_cli_parse_bbox():

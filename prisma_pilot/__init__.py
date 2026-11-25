@@ -14,7 +14,7 @@ from prisma_pilot.auth import get_authenticated_session, verify_session, ensure_
 from prisma_pilot.search import AOI, parse_aoi, search_prisma, get_user_orders
 from prisma_pilot.downloader import download_product, download_stream, order_processing, validate_file_integrity, extract_prisma_archive
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __all__ = [
     "config",
     "get_authenticated_session",
